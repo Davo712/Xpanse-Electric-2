@@ -93,9 +93,57 @@
     });
   }
 
+  function setupRevealSections() {
+    const sections = Array.from(document.querySelectorAll('.reveal-section'));
+    if (!sections.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      sections.forEach((section) => section.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, {
+      threshold: 0.16,
+      rootMargin: '0px 0px -8% 0px'
+    });
+
+    sections.forEach((section) => observer.observe(section));
+  }
+
+  function setupWorkCarousel() {
+    document.querySelectorAll('[data-carousel-target]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-carousel-target');
+        const direction = button.getAttribute('data-direction');
+        if (!targetId) return;
+
+        const rail = document.getElementById(targetId);
+        if (!rail) return;
+
+        const firstCard = rail.querySelector('.work-card');
+        const cardWidth = firstCard ? firstCard.getBoundingClientRect().width : 260;
+        const gap = 18;
+        const delta = cardWidth + gap;
+
+        rail.scrollBy({
+          left: direction === 'prev' ? -delta : delta,
+          behavior: 'smooth'
+        });
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setLang(getLang());
     setupEmailForms();
+    setupRevealSections();
+    setupWorkCarousel();
     document.querySelectorAll('.lang-switch button').forEach((b) => {
       b.addEventListener('click', () => setLang(b.dataset.lang));
     });
